@@ -37,6 +37,8 @@ export function createStandaloneApplication({
         presets: CITY_POIS,
         ...geospatial,
         resolveApiKey: () => googleApiKey,
+        // The globe's own ion token doubles as a keyless geocode credential.
+        resolveIonToken: () => cesiumToken,
         signal: context.signal,
       });
       const scene = await createStandaloneScene({

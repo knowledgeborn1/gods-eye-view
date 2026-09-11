@@ -4,14 +4,17 @@ import { createHttpGeospatialProvider } from './http.js';
 import { createPlaceSearch } from './placeSearch.js';
 import { createGoogleGeocoder } from './google.js';
 import { createPhotonGeocoder } from '../keylessGeocoder.js';
+import { createIonGeocoder } from './ionGeocoder.js';
 import { createCoordinateGeocoder } from './coordinateGeocoder.js';
 import { createPresetGeocoder } from './presetGeocoder.js';
 import { createAlpsGeocoder } from './alpsGeocoder.js';
 
 /**
  * Coordinates, bundled names and the unqualified Alps first — all offline —
- * then Google when configured, then keyless Photon, then the local Nominatim
- * route as a last resort. Transport stays local to setup.
+ * then Google when configured, then keyless Photon, then Cesium ion when the
+ * globe's own token is configured (reachable cross-origin, so it still answers
+ * on a static deploy with no proxy), then the local Nominatim route as a last
+ * resort. Transport stays local to setup.
  *
  * `presets` is the caller's bundled place data. It is passed in rather than
  * imported so this package keeps reading no application state; with none
@@ -19,6 +22,7 @@ import { createAlpsGeocoder } from './alpsGeocoder.js';
  */
 export function createDefaultPlaceSearch({
   resolveApiKey,
+  resolveIonToken,
   fetchImpl = (...args) => fetch(...args),
   signal,
   endpoints = {},
@@ -57,8 +61,13 @@ export function createDefaultPlaceSearch({
               },
             }),
             createPhotonGeocoder({ fetchImpl, endpoint: endpoints.photon }),
+            createIonGeocoder({
+              resolveToken: resolveIonToken,
+              fetchImpl,
+              endpoint: endpoints.ion,
+            }),
             // Last resort: the local Nominatim route, which answers with no key when
-            // neither of the two above did. It speaks the same result shape, so it
+            // none of the above did. It speaks the same result shape, so it
             // rides the existing Google adapter rather than needing its own.
             createGoogleGeocoder({
               request(query, { bias, signal }) {

@@ -6,6 +6,7 @@ export {
   normalizeGoogleReverse,
 } from './http.js';
 export { createPhotonGeocoder } from '../keylessGeocoder.js';
+export { createIonGeocoder } from './ionGeocoder.js';
 export { createDefaultPlaceSearch } from './defaults.js';
 export { createCoordinateGeocoder } from './coordinateGeocoder.js';
 export { createPresetGeocoder } from './presetGeocoder.js';
