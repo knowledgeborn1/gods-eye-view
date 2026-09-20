@@ -272,6 +272,24 @@ export const DATA_CREDITS = [
       '(public domain; audio delivered directly by each broadcaster)',
   },
   {
+    key: 'eox-s2cloudless',
+    html:
+      'Cloudless satellite basemap: Sentinel-2 cloudless by ' +
+      '<a href="https://cloudless.eox.at" target="_blank" rel="noopener">EOX IT Services GmbH</a> ' +
+      '(contains modified Copernicus Sentinel data) — ' +
+      '<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> ' +
+      '(NonCommercial); rendering © ' +
+      '<a href="https://maps.eox.at" target="_blank" rel="noopener">EOX</a>',
+  },
+  {
+    key: 'gibs-viirs',
+    html:
+      'Daily true-color imagery: ' +
+      '<a href="https://worldview.earthdata.nasa.gov" target="_blank" rel="noopener">NASA GIBS / Worldview</a> — ' +
+      'VIIRS/SNPP Corrected Reflectance (True Color), part of NASA’s Earth Observing ' +
+      'System Data and Information System (EOSDIS)',
+  },
+  {
     key: 'rainviewer',
     html:
       'Precipitation radar &amp; infrared cloud tops: ' +

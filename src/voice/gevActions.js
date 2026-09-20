@@ -242,6 +242,18 @@ const STACK_ALIASES = new Map([
   ['road', 'osm'],
   ['roads', 'osm'],
   ['road map', 'osm'],
+  ['eox-s2cloudless', 'eox-s2cloudless'],
+  ['sentinel', 'eox-s2cloudless'],
+  ['sentinel 2', 'eox-s2cloudless'],
+  ['sentinel-2', 'eox-s2cloudless'],
+  ['cloudless', 'eox-s2cloudless'],
+  ['sentinel 2 cloudless', 'eox-s2cloudless'],
+  ['gibs-viirs', 'gibs-viirs'],
+  ['viirs', 'gibs-viirs'],
+  ['today', 'gibs-viirs'],
+  ["today's imagery", 'gibs-viirs'],
+  ['gibs', 'gibs-viirs'],
+  ['nasa', 'gibs-viirs'],
 ]);
 
 /** Search order for track_entity across entity layer families. */

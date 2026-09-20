@@ -842,10 +842,37 @@
   letter-spacing: 1.35px;
 }
 
+/* Four across, so the seven shipped sources land as 4 + 3 rather than the
+   5 + 2 a five-column track produced when Sentinel-2 and VIIRS were added. */
 .map-stack-chip-row {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 4px;
+}
+
+/* The VIIRS date control. `hidden` does the hiding (the map source controls
+   toggle it with the active stack), so this rule must not set a competing
+   `display` — hence the :not() rather than a `[hidden] { display: none }`
+   override. */
+.map-source-date-row:not([hidden]) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.pp-date-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 3px 6px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  /* The native picker indicator renders near-black on this dark tray. */
+  color-scheme: dark;
 }
 
 .map-stack-chip {

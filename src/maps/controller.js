@@ -221,6 +221,34 @@ export class MapSourceController {
     return this.getState();
   }
 
+  /**
+   * Retire one source's cached imagery provider because its configuration
+   * changed (a dated mosaic moved to another day), and rebuild the globe only
+   * when that source is what is actually on screen — reconfiguring a source
+   * while looking at another should arm the choice, not hijack the view.
+   */
+  async reconfigureSource(id, { silent = false } = {}) {
+    if (this._destroyed) return this.getState();
+    const previous = this._imageryProviders.get(id);
+    this._imageryProviders.delete(id);
+    let state;
+    if (this._activeId === id) {
+      state = await this.setStack(id, { silent });
+    } else {
+      if (!silent) this._emitChange('ready');
+      state = this.getState();
+    }
+    if (previous)
+      void Promise.resolve(previous).then(
+        (value) => {
+          if (value.provider !== this._activeImageryProvider)
+            this._dispose(value.provider);
+        },
+        () => {},
+      );
+    return state;
+  }
+
   _activate(stack, gen) {
     const source = this._sources.get(stack.id);
     return source.imagery

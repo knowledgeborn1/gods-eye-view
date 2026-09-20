@@ -250,7 +250,7 @@ export const ACTION_DESCRIPTIONS = {
       properties: {
         stack: {
           description:
-            'photoreal = Google 3D. Use bing-aerial only when the user explicitly says "Bing aerial" — "satellite(s)" never means a basemap; only the explicit phrase "Esri" / "Esri imagery" means esri-imagery.',
+            'photoreal = Google 3D. Use bing-aerial only when the user explicitly says "Bing aerial" — "satellite(s)" never means a basemap; only the explicit phrase "Esri" / "Esri imagery" means esri-imagery. "Sentinel"/"Sentinel-2"/"cloudless" means eox-s2cloudless (a cloud-free annual mosaic). "today"/"today\'s imagery"/"VIIRS" means gibs-viirs (yesterday\'s complete NASA daily mosaic by default).',
           $position: 2,
         },
       },

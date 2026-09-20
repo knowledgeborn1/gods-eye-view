@@ -213,6 +213,22 @@ const layers = [
     noQuery: 'map overlay; no countable records',
   },
   {
+    // RainViewer worldwide precipitation loop: a Data Layers toggle, separate
+    // from the WEATHER rail's NOAA MRMS 'weather-radar', which keeps the bare
+    // "radar"/"rain"/"weather" phrases above.
+    id: 'rainviewer-radar',
+    aliases: [
+      'rainviewer',
+      'rain viewer',
+      'global radar',
+      'worldwide radar',
+      'precipitation radar',
+      'precipitation',
+    ],
+    context: false,
+    noQuery: 'map overlay; no countable records',
+  },
+  {
     id: 'weather-satellite',
     aliases: ['weather satellite', 'clouds', 'cloud imagery'],
     context: false,

@@ -37,4 +37,18 @@ export const MAP_STACKS = [
     kind: 'osm',
     requiresIon: false,
   },
+  {
+    id: 'eox-s2cloudless',
+    label: 'Sentinel-2',
+    shortLabel: 'S2',
+    kind: 'eox-s2cloudless',
+    requiresIon: false,
+  },
+  {
+    id: 'gibs-viirs',
+    label: 'Today (VIIRS)',
+    shortLabel: 'TODAY',
+    kind: 'gibs-viirs',
+    requiresIon: false,
+  },
 ];

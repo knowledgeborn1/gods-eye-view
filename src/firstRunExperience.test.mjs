@@ -674,10 +674,15 @@ test('the voice TOOL SCHEMA matches the pinned contract — the mission mapping 
   // schema, which may not carry top-level anyOf), and Contacts requested-radius
   // list descriptions; the missions still ride existing tools.
   // Street Level adds toggle enum values and the generated alias hint.
-  assert.equal(block.length, 29802, 'serialized tool schema length drifted');
+  //
+  // Re-pinned 2026-10-11 (fresh-imagery + RainViewer rebase): set_map_stack
+  // gains the two keyless basemaps ('eox-s2cloudless', 'gibs-viirs') and the
+  // manifest-generated layer enums gain 'rainviewer-radar'. Real capabilities
+  // the assistant now has — not a mission riding a tool it should not need.
+  assert.equal(block.length, 30116, 'serialized tool schema length drifted');
   assert.equal(
     crypto.createHash('sha256').update(block).digest('hex'),
-    'b316ca2e67848eb565b6847ac044a19d1465d8ef8252a5dfbd7d947a2a36d5ed',
+    '0b3584c8fe1ca6e97633ae3069a8a853aa7361b6ddb37b4c0231543d1bf8732a',
     'the first-run missions must ride EXISTING tools: no schema edit, no cache bust',
   );
   const instructions = fs.readFileSync(new URL('../server/providers/openai/instructions.js', import.meta.url), 'utf8');

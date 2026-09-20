@@ -55,6 +55,15 @@
           <span id="map-stack-status" class="pp-stack-status" aria-live="polite">3D</span>
         </div>
         <div id="map-stack-chips" class="map-stack-chip-row" role="group" aria-label="Map source"></div>
+        <!-- Only meaningful while the VIIRS stack is active, so the map source
+             controls reveal it with that chip and hide it again on every other
+             source. The value is painted from the controller (yesterday UTC by
+             default — today's swath is usually still half-flown). -->
+        <div id="gibs-date-row" class="map-source-date-row" hidden>
+          <label class="pp-slider-mini-label" for="gibs-date-input">Date</label>
+          <input type="date" id="gibs-date-input" class="pp-date-input" aria-label="VIIRS imagery date" />
+          <button type="button" id="gibs-date-latest" class="pp-mode-btn" title="Back to the most recent complete day">LATEST</button>
+        </div>
       </section>
       </div>
       <div id="style-mini-status" class="panel-mini-status" aria-live="polite">

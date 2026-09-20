@@ -37,7 +37,10 @@ test('the complete Realtime tool payload pins the manifest-generated layer relea
     // omit top-level anyOf (OpenAI rejects it). Contacts list routing preserves
     // requested radius and center authority in descriptions only.
     // Street Level adds its toggle enum values and generated alias hint.
-    '9eb113454c5af5e32e27ffcdc7919d0e4600ba1d204f8f175e071152be41ad0f',
+    // Re-pinned 2026-10-11 (fresh-imagery + RainViewer rebase): set_map_stack
+    // gains 'eox-s2cloudless' and 'gibs-viirs' with their description, and
+    // the manifest-generated layer enums and alias hint gain 'rainviewer-radar'.
+    'b62ab702573a6069893c2c1045f18c37dd2a900dbe67612932f224b319d3f571',
   );
 });
 
@@ -137,6 +140,12 @@ test('all legacy action arguments are byte-identical after removing the delibera
   // Cyber adds one HUD layout.
   const hud = property('set_hud').layout;
   hud.enum = hud.enum.filter((layout) => layout !== 'cyber');
+  // Fresh imagery (2026-09-20, rebased 2026-10-11) adds the two keyless
+  // basemaps to set_map_stack; removed here so the legacy pin keeps holding.
+  const stack = property('set_map_stack').stack;
+  stack.enum = stack.enum.filter(
+    (id) => !['eox-s2cloudless', 'gibs-viirs'].includes(id),
+  );
   // Derived by applying the same removals to the 4b56d0e9 actionSchemas.
   assert.equal(
     createHash('sha256').update(JSON.stringify(legacy)).digest('hex'),

@@ -712,6 +712,9 @@ export class StyleManager extends ShellFacade {
     this._mapSourceControls = createMapSourceControls({
       container: this._mapStackChips,
       statusElement: this._mapStackStatus,
+      dateRow: this._gibsDateRow,
+      dateInput: this._gibsDateInput,
+      dateLatestButton: this._gibsDateLatestBtn,
       controller: this.mapStackController,
       subscribe: (onChange) => {
         window.addEventListener('gev:map-stack-changed', onChange);

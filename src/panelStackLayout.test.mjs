@@ -263,17 +263,37 @@ test('expanded left panels integrate their headers with the container shell', ()
   );
 });
 
-test('Map Source uses five compact tiles in the bottom Visual Presets tray', () => {
+test('Map Source uses compact tiles in the bottom Visual Presets tray', () => {
   const html = expandApplicationHtml(readFileSync(new URL('../index.html', import.meta.url), 'utf8'));
   const css = readStylesheet(new URL('../style.css', import.meta.url));
 
   assert.doesNotMatch(html, /id="stack-panel"/);
   assert.match(html, /id="control-panel"[\s\S]*?class="map-source-section"[\s\S]*?id="map-stack-chips"/);
+  // Four across: the seven shipped sources land as 4 + 3. A five-column
+  // track left the second row holding two lonely tiles once Sentinel-2 and
+  // VIIRS joined, so the column count tracks the source count deliberately
+  // rather than being a leftover from when there were exactly five.
   assert.match(
     css,
-    /\.map-stack-chip-row\s*\{[\s\S]*?grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\);/,
-    'the desktop source selector keeps all five tiles on one row',
+    /\.map-stack-chip-row\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\);/,
+    'the desktop source selector keeps the tiles on a balanced grid',
   );
+});
+
+test('the VIIRS date control ships inside Map Source and starts hidden', () => {
+  const html = expandApplicationHtml(readFileSync(new URL('../index.html', import.meta.url), 'utf8'));
+  const css = readStylesheet(new URL('../style.css', import.meta.url));
+
+  // It belongs to one stack, so it must not be visible in the markup default —
+  // the map source controls reveal it with the VIIRS chip and hide it on
+  // every other source.
+  assert.match(
+    html,
+    /class="map-source-section"[\s\S]*?id="gibs-date-row"[^>]*\bhidden\b[\s\S]*?id="gibs-date-input"[\s\S]*?id="gibs-date-latest"/,
+  );
+  // The CSS must not fight `hidden` with a competing `display`.
+  assert.match(css, /\.map-source-date-row:not\(\[hidden\]\)\s*\{[\s\S]*?display:\s*flex;/);
+  assert.doesNotMatch(css, /\.map-source-date-row\s*\{[\s\S]*?display:\s*flex;/);
 });
 
 test('expanded right panels highlight the title divider without changing collapsed launchers', () => {

@@ -78,7 +78,17 @@ export const CABLE_LABEL_DEPTH_DECISION = Object.freeze({
  */
 
 export const CABLE_GLOBE_STACK_IDS = Object.freeze(
-  new Set(['bing-aerial', 'bing-labels', 'esri-imagery', 'osm']),
+  // The keyless fresh-imagery stacks are ordinary globe imagery like the rest
+  // — WMTS tiles on the shown Cesium globe — so cables classify against
+  // terrain there too.
+  new Set([
+    'bing-aerial',
+    'bing-labels',
+    'esri-imagery',
+    'osm',
+    'eox-s2cloudless',
+    'gibs-viirs',
+  ]),
 );
 
 /** EntityCluster's private marker collections and their required types. */

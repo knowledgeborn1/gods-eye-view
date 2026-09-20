@@ -19,6 +19,11 @@ export const PRESENTED_MAP_STACK_IDS = Object.freeze([
   'bing-labels',
   'esri-imagery',
   'osm',
+  // Keyless fresh-imagery pair: a cloud-free annual mosaic, and yesterday's
+  // actual sky. Both sit after the always-available keyless sources so the
+  // row still opens on the stacks a first run can definitely render.
+  'eox-s2cloudless',
+  'gibs-viirs',
 ]);
 
 /**

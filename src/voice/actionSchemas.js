@@ -351,6 +351,8 @@ const schemas = [
             'bing-labels',
             'esri-imagery',
             'osm',
+            'eox-s2cloudless',
+            'gibs-viirs',
           ],
         },
       },
