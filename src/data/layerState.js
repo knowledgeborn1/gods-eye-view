@@ -394,6 +394,17 @@ const OPTION_GROUPS = Object.freeze({
     booleanOption('showProjection', 'p', true),
     booleanOption('autoHop', 'a', false),
   ]),
+  'rainviewer-radar': Object.freeze([
+    // The radar loop's play state is durable because it is a TOGGLE the user
+    // set. The displayed FRAME deliberately is not: frame identity is an
+    // absolute timestamp inside a two-hour trailing window, so by the time a
+    // link is opened the frame it names has almost always aged out of the
+    // feed. A recipient gets the live loop, which is what "share the radar"
+    // means; the runtime `frameTime` param stays out of this registry and
+    // therefore out of the URL.
+    booleanOption('playing', 'p', false),
+    booleanOption('infrared', 'i', false),
+  ]),
   'recent-imagery': Object.freeze([
     // Box edges in degrees × 100000; latitudes stop at the Web-Mercator limit.
     boundedIntegerOption('west', 'w', null, { min: -18000000, max: 18000000 }),
@@ -635,6 +646,17 @@ export const LAYER_STATE_REGISTRY = Object.freeze([
     token: 'r',
     disposition: 'enabled+options',
     optionOwner: 'radio',
+  }),
+  Object.freeze({
+    // RainViewer worldwide precipitation radar — a Data Layers toggle, distinct
+    // from the rail's NOAA MRMS 'weather-radar' (token 'v'). Allocated
+    // 2026-10-11 via `npm run layer-token:next` against the published ledger
+    // after the rebase onto main: '0'–'2' were already owned, so '3' is the
+    // next free digit.
+    id: 'rainviewer-radar',
+    token: '3',
+    disposition: 'enabled+options',
+    optionOwner: 'rainviewer-radar',
   }),
   Object.freeze({
     id: 'recent-imagery',

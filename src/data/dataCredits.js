@@ -272,6 +272,12 @@ export const DATA_CREDITS = [
       '(public domain; audio delivered directly by each broadcaster)',
   },
   {
+    key: 'rainviewer',
+    html:
+      'Precipitation radar &amp; infrared cloud tops: ' +
+      '<a href="https://www.rainviewer.com" target="_blank" rel="noopener">Weather data by RainViewer</a>',
+  },
+  {
     key: 'reearth-terrain',
     html:
       'Terrain (keyless globe stacks): ' +
