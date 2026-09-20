@@ -290,6 +290,13 @@ export const DATA_CREDITS = [
       'System Data and Information System (EOSDIS)',
   },
   {
+    key: 'gibs-black-marble',
+    html:
+      'Night-side city lights: ' +
+      '<a href="https://worldview.earthdata.nasa.gov" target="_blank" rel="noopener">NASA GIBS / Worldview</a> — ' +
+      'VIIRS Black Marble (2016 global night-lights composite)',
+  },
+  {
     key: 'rainviewer',
     html:
       'Precipitation radar &amp; infrared cloud tops: ' +

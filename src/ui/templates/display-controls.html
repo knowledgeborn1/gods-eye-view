@@ -153,6 +153,27 @@
         <span class="pp-label">Celestial</span>
       </button>
     </div>
+    <div class="pp-toggle-group">
+      <!-- Day/night lives on a GLOBE stack: with Google 3D active the Cesium
+           globe is hidden, so the terminator and the city lights have no
+           surface to land on and only the atmosphere responds. The tooltip
+           says so rather than leaving it as a mystery. -->
+      <button class="pp-toggle-btn" id="sun-toggle" title="Sun — real-time day/night terminator and city lights (globe map sources)" aria-pressed="false">
+        <span class="pp-icon material-symbols-outlined" aria-hidden="true">wb_twilight</span>
+        <span class="pp-label">Sun</span>
+      </button>
+      <div class="pp-slider-row" id="sun-time-row">
+        <label class="pp-slider-mini-label" for="sun-time-slider">Time</label>
+        <!-- Minutes, not hours: ±12 h at 15-minute steps, 0 = follow real time. -->
+        <input type="range" class="pp-slider" id="sun-time-slider" min="-720" max="720" step="15" value="0" aria-label="Sun position offset from now" title="Drag the terminator up to 12 hours either side of now" />
+        <span class="pp-slider-value" id="sun-time-value">LIVE</span>
+        <button class="pp-mode-btn" id="sun-live-btn" type="button" title="Snap the sun back to real time">LIVE</button>
+      </div>
+      <div class="pp-slider-row" id="sun-lights-row">
+        <span class="pp-slider-mini-label">Lights</span>
+        <button class="pp-mode-btn active" id="sun-city-lights" type="button" aria-pressed="true" title="NASA Black Marble city lights, on the night side only">CITY LIGHTS</button>
+      </div>
+    </div>
     <button class="pp-toggle-btn" id="clean-view-toggle" title="Hide UI chrome">
       <span class="pp-icon">&#x25A1;</span>
       <span class="pp-label">Clean UI</span>

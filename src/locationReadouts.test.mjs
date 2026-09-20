@@ -24,9 +24,13 @@ test('the ACTIVE STYLE indicator is written from the style name and nothing else
   // top-right style slot, so the corner read "ACTIVE STYLE / TOKYO".
   const writes = [...ui.matchAll(/this\._styleIndicator\.textContent\s*=/g)];
   assert.equal(writes.length, 1, 'the style indicator must have exactly one writer');
+  // The name table moved to a module constant (STYLE_DISPLAY_NAMES) when the
+  // SUN tooltip needed the same operator-facing names — one table, so the
+  // indicator and the tooltip can never disagree about what "thermal" reads
+  // as. The guarded claim is unchanged: styleName is the only input.
   assert.match(
     ui.slice(writes[0].index, writes[0].index + 160),
-    /this\._styleIndicator\.textContent =\s*displayNames\[styleName\] \|\| styleName\.toUpperCase\(\);/,
+    /this\._styleIndicator\.textContent =\s*STYLE_DISPLAY_NAMES\[styleName\] \|\| styleName\.toUpperCase\(\);/,
   );
 
   const handler = locationSearchHandler();

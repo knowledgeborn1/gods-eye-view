@@ -1,4 +1,5 @@
 import { STYLE_STATUS_LABELS } from './visualPresets.js';
+import { DayNightController, sunOffsetLabel } from '../dayNight.js';
 import { UiLifetime } from './uiLifetime.js';
 import {
   VisualEffects,
@@ -40,6 +41,17 @@ import {
 } from '../cyberSonar.js';
 import { cyberVisualDefaultsForHudTransition } from '../hudLayouts.js';
 const DETECTION_ALLOCATION_STORAGE_KEY = 'gev:detection-allocation:v1';
+
+/**
+ * Operator-facing names for the styles whose internal id is not what anyone
+ * calls them. Shared by the style indicator and the SUN tooltip, so the two
+ * can never disagree about what "thermal" is called on screen.
+ */
+const STYLE_DISPLAY_NAMES = Object.freeze({
+  surveillance: 'NVG',
+  thermal: 'FLIR',
+  retro: 'CRT',
+});
 
 /** Own visual preferences, detection overrides and display-control state. */
 export class VisualSettings {
@@ -199,6 +211,11 @@ export class VisualSettings {
     this._preCyberStyle = null;
     this._cyberStyleUserSelected = false;
     document.documentElement.dataset.gevStyle = this.activeStyle;
+    // Real-sun day/night: globe lighting, Black Marble city lights, and the
+    // ±12 h clock offset that drives the terminator.
+    this.dayNight = new DayNightController(viewer, {
+      activeStyle: this.activeStyle,
+    });
     this._detectionUserOverridden = false;
     this._cockpitVisionMode = 'optical';
     this._cockpitVisionRestore = null;
@@ -1146,6 +1163,99 @@ export class VisualSettings {
     };
   }
 
+  /**
+   * Turn the day/night treatment on or off.
+   *
+   * Unlike the celestial ring, an incompatible style does NOT refuse this: the
+   * SUN intent is latched and the lighting is merely suspended while a sensor
+   * sim is active, so leaving NVG/FLIR brings the terminator back. Refusing
+   * instead would silently switch the user's toggle off behind a style change.
+   * @param {boolean} enabled
+   * @param {object} [options]
+   * @param {boolean} [options.syncShare=true]
+   * @returns {{ok: boolean, sun: object, error?: string}}
+   */
+  setSunEnabled(enabled, { syncShare = true } = {}) {
+    if (typeof enabled !== 'boolean') {
+      return {
+        ok: false,
+        sun: this.dayNight.getState(),
+        error: `Invalid sun enabled value: ${enabled}`,
+      };
+    }
+    if (syncShare) this.shareLinkManager?.claimRestoreLane?.('visual');
+    const state = this.dayNight.setEnabled(enabled);
+    this._renderDayNightState(state);
+    if (syncShare) this._syncShareState();
+    return { ok: true, sun: state };
+  }
+
+  /** Scrub the terminator: minutes either side of now, clamped by the controller. */
+  setSunOffsetMinutes(minutes, { syncShare = true } = {}) {
+    if (syncShare) this.shareLinkManager?.claimRestoreLane?.('visual');
+    const value = Number.parseInt(minutes, 10) || 0;
+    const state = this.dayNight.setOffsetHours(value / 60);
+    this._renderDayNightState(state);
+    if (syncShare) this._syncShareState();
+    return { ok: true, sun: state };
+  }
+
+  /** Snap the sun back to real time. */
+  goSunLive({ syncShare = true } = {}) {
+    if (syncShare) this.shareLinkManager?.claimRestoreLane?.('visual');
+    const state = this.dayNight.goLive();
+    this._renderDayNightState(state);
+    if (syncShare) this._syncShareState();
+    return { ok: true, sun: state };
+  }
+
+  /** Show or hide the Black Marble city lights on the night side. */
+  setSunCityLights(enabled, { syncShare = true } = {}) {
+    if (syncShare) this.shareLinkManager?.claimRestoreLane?.('visual');
+    const state = this.dayNight.setCityLights(Boolean(enabled));
+    this._renderDayNightState(state);
+    if (syncShare) this._syncShareState();
+    return { ok: true, sun: state };
+  }
+
+  /**
+   * Paint the SUN control block from controller state — never from the click,
+   * so a style-suspended lighting pass still reports what is on screen.
+   * @param {object} state - `DayNightController.getState()`.
+   * @returns {void}
+   */
+  _renderDayNightState(state) {
+    if (!state) return;
+    this._sunBtn?.classList.toggle('active', state.enabled);
+    this._sunBtn?.setAttribute('aria-pressed', String(state.enabled));
+    // Suspended-by-style is a real, visible condition: the toggle stays lit
+    // (the intent survives) but the tooltip stops claiming a terminator the
+    // sensor sim is not rendering.
+    if (this._sunBtn) {
+      this._sunBtn.title = state.suspendedByStyle
+        ? `Sun — paused while the ${STYLE_DISPLAY_NAMES[state.suspendedByStyle] || state.suspendedByStyle} sensor is active; returns with Normal`
+        : 'Sun — real-time day/night terminator and city lights (globe map sources)';
+      this._sunBtn.classList.toggle(
+        'suspended',
+        Boolean(state.suspendedByStyle),
+      );
+    }
+    if (this._sunTimeRow)
+      this._sunTimeRow.classList.toggle('visible', state.enabled);
+    if (this._sunLightsRow)
+      this._sunLightsRow.classList.toggle('visible', state.enabled);
+    if (this._sunTimeSlider)
+      this._sunTimeSlider.value = String(Math.round(state.offsetHours * 60));
+    if (this._sunTimeValue)
+      this._sunTimeValue.textContent = sunOffsetLabel(state.offsetHours);
+    if (this._sunLiveBtn) this._sunLiveBtn.disabled = state.offsetHours === 0;
+    this._sunCityLightsBtn?.classList.toggle('active', state.cityLights);
+    this._sunCityLightsBtn?.setAttribute(
+      'aria-pressed',
+      String(state.cityLights),
+    );
+  }
+
   get celestialRingEnabled() {
     return !!this.celestialRing?.enabled;
   }
@@ -1594,9 +1704,8 @@ export class VisualSettings {
     });
 
     // Update style indicator
-    const displayNames = { surveillance: 'NVG', thermal: 'FLIR', retro: 'CRT' };
     this._styleIndicator.textContent =
-      displayNames[styleName] || styleName.toUpperCase();
+      STYLE_DISPLAY_NAMES[styleName] || styleName.toUpperCase();
     this._updateStyleMiniStatus(styleName);
 
     // Update parameter sliders
@@ -1605,6 +1714,11 @@ export class VisualSettings {
     // Notify HUD (color adaptation + auto show/hide)
     this.hud.onStyleChange(styleName);
     this._updateHudButtonState();
+
+    // Sensor sims (NVG/FLIR) cannot recover signal from an unlit night side,
+    // so lighting is suspended while one is active and restored on the way
+    // out. The user's SUN intent is latched in the controller, not here.
+    this._renderDayNightState(this.dayNight.setActiveStyle(styleName));
 
     // Sync detection overlay tone to active post-process style
     setDetectionStyle(styleName);
@@ -1702,6 +1816,7 @@ export class VisualSettings {
   destroy() {
     this.stop();
     this.releaseIrBoost();
+    this.dayNight?.destroy();
     this._visualEffects.destroy();
   }
 }

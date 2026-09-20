@@ -185,6 +185,13 @@ export class StyleManager extends ShellFacade {
         _bloomSliderRow: this._bloomSliderRow,
         _bloomSliderValue: this._bloomSliderValue,
         _celestialBtn: this._celestialBtn,
+        _sunBtn: this._sunBtn,
+        _sunTimeRow: this._sunTimeRow,
+        _sunTimeSlider: this._sunTimeSlider,
+        _sunTimeValue: this._sunTimeValue,
+        _sunLiveBtn: this._sunLiveBtn,
+        _sunLightsRow: this._sunLightsRow,
+        _sunCityLightsBtn: this._sunCityLightsBtn,
         _cockpitDisplayToggleBtn: this._cockpitDisplayToggleBtn,
         _detectionAllocationRow: this._detectionAllocationRow,
         _detectionBtn: this._detectionBtn,
@@ -517,6 +524,10 @@ export class StyleManager extends ShellFacade {
         _detectionFadeSlider: this._detectionFadeSlider,
         _detectionOpacitySlider: this._detectionOpacitySlider,
         _celestialBtn: this._celestialBtn,
+        _sunBtn: this._sunBtn,
+        _sunTimeSlider: this._sunTimeSlider,
+        _sunLiveBtn: this._sunLiveBtn,
+        _sunCityLightsBtn: this._sunCityLightsBtn,
         _models3dBtn: this._models3dBtn,
         _scopeFeatherValue: this._scopeFeatherValue,
         _sharpenSliderValue: this._sharpenSliderValue,
@@ -545,6 +556,12 @@ export class StyleManager extends ShellFacade {
           this._applyDetectionFadeFromUi(...args),
         setCelestialRingEnabled: (...args) =>
           this.setCelestialRingEnabled(...args),
+        setSunEnabled: (...args) => this.setSunEnabled(...args),
+        setSunOffsetMinutes: (...args) =>
+          this._visualSettings.setSunOffsetMinutes(...args),
+        goSunLive: (...args) => this._visualSettings.goSunLive(...args),
+        setSunCityLights: (...args) =>
+          this._visualSettings.setSunCityLights(...args),
         _setModels3dEnabled: (...args) => this._setModels3dEnabled(...args),
         _syncModels3dModeRow: (...args) => this._syncModels3dModeRow(...args),
         _setModels3dMode: (...args) => this._setModels3dMode(...args),
@@ -556,6 +573,7 @@ export class StyleManager extends ShellFacade {
         sharpenEnabled: this.sharpenEnabled,
         celestialRing: this.celestialRing,
         celestialRingEnabled: this.celestialRingEnabled,
+        dayNight: this._visualSettings.dayNight,
         _models3dEnabled: this._models3dEnabled,
         _models3dModeBtns: this._models3dModeBtns,
         _detectionAllocationBtns: this._detectionAllocationBtns,
@@ -1251,6 +1269,22 @@ export class StyleManager extends ShellFacade {
    */
   setCelestialRingEnabled(enabled, { syncShare = true, focus = false } = {}) {
     return this._visualSettings.setCelestialRingEnabled(...arguments);
+  }
+
+  /** Real-sun day/night controller (terminator, city lights, clock offset). */
+  get dayNight() {
+    return this._visualSettings.dayNight;
+  }
+
+  /**
+   * Turn the day/night treatment on or off. Latched across sensor styles.
+   * @param {boolean} enabled
+   * @param {object} [options]
+   * @param {boolean} [options.syncShare=true]
+   * @returns {{ok: boolean, sun: object, error?: string}}
+   */
+  setSunEnabled(enabled, { syncShare = true } = {}) {
+    return this._visualSettings.setSunEnabled(...arguments);
   }
 
   /**

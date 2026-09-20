@@ -38,6 +38,9 @@ export class DisplayBindings {
   get celestialRingEnabled() {
     return this.readState().celestialRingEnabled;
   }
+  get dayNight() {
+    return this.readState().dayNight;
+  }
   get _models3dEnabled() {
     return this.readState()._models3dEnabled;
   }
@@ -117,6 +120,10 @@ export class DisplayBindings {
         allocationButtons: this._detectionAllocationBtns,
         fadeSliders: [this._detectionFadeSlider, this._detectionOpacitySlider],
         celestialButton: this._celestialBtn,
+        sunButton: this._sunBtn,
+        sunTimeSlider: this._sunTimeSlider,
+        sunLiveButton: this._sunLiveBtn,
+        sunCityLightsButton: this._sunCityLightsBtn,
         modelsButton: this._models3dBtn,
         modelModeButtons: this._models3dBtn ? this._models3dModeBtns : [],
       },
@@ -191,6 +198,13 @@ export class DisplayBindings {
             this.setCelestialRingEnabled(false);
           }
         },
+        // Sun — real day/night terminator, city lights, and the ±12 h scrubber.
+        // Each setter claims the visual restore lane and syncs the share link.
+        toggleSun: () => this.setSunEnabled(!this.dayNight?.enabled),
+        setSunOffset: (minutes) => this.setSunOffsetMinutes(minutes),
+        goSunLive: () => this.goSunLive(),
+        toggleSunCityLights: () =>
+          this.setSunCityLights(!this.dayNight?.getState().cityLights),
         toggleHud: () => {
           this.shareLinkManager?.claimRestoreLane?.('visual');
           this.hud.toggle();

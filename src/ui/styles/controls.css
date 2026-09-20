@@ -653,6 +653,20 @@
   border-radius: 8px 8px 0 0;
 }
 
+/* A group with two open rows (Sun: time + lights) must read as one stack, so
+   only the LAST visible row keeps the rounded foot. Without this the seam
+   between them renders as two separate half-rounded cards. */
+.pp-toggle-group .pp-slider-row.visible:has(~ .pp-slider-row.visible) {
+  border-radius: 0;
+}
+
+/* SUN stays lit while a sensor sim suspends its lighting — the intent
+   survives the style — but it must not look fully active while nothing is
+   being drawn, so it dims rather than switching itself off. */
+.pp-toggle-btn.suspended {
+  opacity: 0.62;
+}
+
 .pp-slider {
   flex: 1;
   -webkit-appearance: none;

@@ -20,6 +20,9 @@ export function bindDisplayControls({ elements, actions }) {
     ['cleanViewButton', 'toggleCleanView'],
     ['cleanViewExitButton', 'exitCleanView'],
     ['celestialButton', 'toggleCelestial'],
+    ['sunButton', 'toggleSun'],
+    ['sunLiveButton', 'goSunLive'],
+    ['sunCityLightsButton', 'toggleSunCityLights'],
     ['hudButton', 'toggleHud'],
     ['sonarButton', 'toggleSonar'],
     ['detectionButton', 'cycleDetection'],
@@ -30,6 +33,7 @@ export function bindDisplayControls({ elements, actions }) {
     ['bloomSlider', 'setBloomIntensity'],
     ['sharpenSlider', 'setSharpenIntensity'],
     ['scopeFeatherSlider', 'setScopeFeather'],
+    ['sunTimeSlider', 'setSunOffset'],
   ])
     listen(elements[name], 'input', action, integer);
   listen(elements.densitySlider, 'input', 'setDensity', (el) => el.value);
