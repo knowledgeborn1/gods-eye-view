@@ -1,5 +1,6 @@
 import { STYLE_STATUS_LABELS } from './visualPresets.js';
 import { DayNightController, sunOffsetLabel } from '../dayNight.js';
+import { gibsDefaultDate } from '../maps/gibsDate.js';
 import { UiLifetime } from './uiLifetime.js';
 import {
   VisualEffects,
@@ -81,6 +82,10 @@ export class VisualSettings {
       scopeFeatherPct,
       scopeTerminusPct,
       mapStack,
+      gibsDate,
+      sunEnabled,
+      sunOffsetMinutes,
+      sunCityLights,
       panelState,
       styleParams,
     } = state || {};
@@ -164,6 +169,24 @@ export class VisualSettings {
       const pinned = clampScopeTerminusPct(scopeTerminusPct);
       setScopeTerminusOverride(pinned == null ? null : pinned / 100);
     }
+    // The sun restores BEFORE the style settles below, and the controller
+    // re-derives suspension from the active style on every apply, so a
+    // shared FLIR view still lands with SUN latched-but-suspended rather
+    // than with lighting fighting the sensor.
+    if (typeof sunCityLights === 'boolean')
+      this.dayNight.setCityLights(sunCityLights);
+    if (typeof sunOffsetMinutes === 'number')
+      this.dayNight.setOffsetHours(sunOffsetMinutes / 60);
+    if (typeof sunEnabled === 'boolean') {
+      this._renderDayNightState(this.dayNight.setEnabled(sunEnabled));
+    } else {
+      this._renderDayNightState(this.dayNight.getState());
+    }
+    // The date has to be armed before the stack switch, or activating
+    // VIIRS would build its provider on the default day and then rebuild
+    // it a moment later on the shared one.
+    if (gibsDate)
+      await this.mapStackController?.setGibsDate?.(gibsDate, { silent: true });
     const mapStackRestore = mapStack
       ? this._setMapStack(mapStack, { syncShare: false })
       : Promise.resolve();
@@ -917,6 +940,15 @@ export class VisualSettings {
             ? null
             : Math.round(getScopeTerminusOverride() * 100),
         mapStack: this.mapStackController?.getActiveId?.() || 'photoreal',
+        sunEnabled: this.dayNight.enabled,
+        sunOffsetMinutes: Math.round(this.dayNight.getState().offsetHours * 60),
+        sunCityLights: this.dayNight.getState().cityLights,
+        // Only pinned when the operator actually chose a day — otherwise the
+        // link stays on the rolling "most recent complete day".
+        gibsDate:
+          this.mapStackController?.getGibsDate?.() === gibsDefaultDate()
+            ? null
+            : this.mapStackController?.getGibsDate?.() || null,
       },
     };
   }

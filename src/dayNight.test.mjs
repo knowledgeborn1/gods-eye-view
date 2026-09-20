@@ -133,6 +133,17 @@ test('city lights ride the night side only, and never exist without lighting', (
   const layer = viewer.imageryLayers._layers[0];
   assert.equal(layer.dayAlpha, 0);
   assert.equal(layer.nightAlpha, 1);
+  // The cap is not cosmetic. Black Marble tops out at level 8, and at
+  // nightAlpha 1 it REPLACES the basemap wherever it draws — so past its own
+  // resolution Cesium upsampled one tile over the whole viewport and the
+  // globe rendered as a flat fill (measured luminance sd 0.1 at 600 m) with
+  // the city underneath erased. Gating on terrain level hands the close-in
+  // view back to the lit basemap (sd 15.4, identical to lights-off).
+  // Cesium accepts `maximumTerrainLevel` as a constructor option but exposes
+  // no public getter for it, so the private field is the only way to pin that
+  // the option was actually passed. The BEHAVIOUR it buys was verified in a
+  // browser (the sd numbers above); this guards the wiring.
+  assert.equal(layer._maximumTerrainLevel, BLACK_MARBLE_MAX_LEVEL);
 
   // Suspended by a sensor sim → the layer goes with the lighting.
   sun.setActiveStyle('thermal');

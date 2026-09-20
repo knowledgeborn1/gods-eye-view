@@ -120,6 +120,21 @@ export class ShareLinkManager {
     // outside-fill opacity as a percent, 94..100. (`sce`, 2026-08-17)
     this._scopeTerminusPct = null;
     this._mapStack = 'photoreal';
+    // Day/night. `sun` is always written (like `cr`/`sc`); the offset and the
+    // city-lights flag are omitted at their defaults. These fields are NEW, so
+    // there are no links in the wild authored under a different default and
+    // absent unambiguously means "the default" — the `absentValue` problem
+    // documented in layerState.js cannot arise here yet. If either default
+    // ever moves, that note is what has to be honored.
+    this._sunEnabled = false;
+    this._sunOffsetMinutes = 0;
+    this._sunCityLights = true;
+    // Written only when the VIIRS stack is pinned to a day other than its
+    // rolling default. An absent `vd` therefore means "the most recent
+    // complete day", which is what a recipient opening the link a week later
+    // should see — freezing the author's yesterday into every link would
+    // silently turn a live view into an archive one.
+    this._gibsDate = null;
     this._layerStateProvider = null;
     this._panelStateProvider = null;
     this._styleParamStateProvider = null;
@@ -237,6 +252,18 @@ export class ShareLinkManager {
         ? clampScopeTerminusPct(params.get('sce'))
         : null,
       mapStack: params.get('map') || 'photoreal',
+      sunEnabled: params.get('sun') === '1',
+      // Clamped here as well as in the controller: a hostile or hand-edited
+      // link must not be able to park the app clock a decade away.
+      sunOffsetMinutes: Math.max(
+        -720,
+        Math.min(720, Math.round(parseOr(params.get('sut'), 0))),
+      ),
+      // Absent = lights ON, matching the shipped default.
+      sunCityLights: params.has('sul') ? params.get('sul') === '1' : true,
+      // Absent = follow the rolling default day; the controller normalizes
+      // and clamps whatever a link does carry.
+      gibsDate: params.get('vd') || null,
       layerState: decodedLayerState,
       layerStateInvalid:
         params.get('v') === '2' &&
@@ -358,6 +385,13 @@ export class ShareLinkManager {
         scopeFeatherPct: visualCurrent ? state.scopeFeatherPct : undefined,
         scopeTerminusPct: visualCurrent ? state.scopeTerminusPct : undefined,
         mapStack: mapCurrent ? state.mapStack : undefined,
+        // The VIIRS day belongs to the MAP lane (it re-points a basemap), the
+        // sun controls to the VISUAL lane (they are DISPLAY-rail treatments),
+        // so each is suppressed by the same newer-intent guard as its peers.
+        gibsDate: mapCurrent ? state.gibsDate : undefined,
+        sunEnabled: visualCurrent ? state.sunEnabled : undefined,
+        sunOffsetMinutes: visualCurrent ? state.sunOffsetMinutes : undefined,
+        sunCityLights: visualCurrent ? state.sunCityLights : undefined,
         panelState,
         styleParams: visualCurrent ? state.styleParams : undefined,
       });
@@ -502,6 +536,19 @@ export class ShareLinkManager {
       this._scopeTerminusPct = clampScopeTerminusPct(extras.scopeTerminusPct);
     }
     if (typeof extras.mapStack === 'string') this._mapStack = extras.mapStack;
+    if (typeof extras.sunEnabled === 'boolean')
+      this._sunEnabled = extras.sunEnabled;
+    if (typeof extras.sunOffsetMinutes === 'number') {
+      this._sunOffsetMinutes = Math.max(
+        -720,
+        Math.min(720, Math.round(extras.sunOffsetMinutes)),
+      );
+    }
+    if (typeof extras.sunCityLights === 'boolean')
+      this._sunCityLights = extras.sunCityLights;
+    if (extras.gibsDate === null) this._gibsDate = null;
+    else if (typeof extras.gibsDate === 'string')
+      this._gibsDate = extras.gibsDate;
     this._scheduleUpdate();
   }
 
@@ -586,6 +633,16 @@ export class ShareLinkManager {
     const terminusPct = clampScopeTerminusPct(this._scopeTerminusPct);
     if (terminusPct != null) params.set('sce', String(terminusPct));
     params.set('map', this._mapStack);
+    params.set('sun', this._sunEnabled ? '1' : '0');
+    // Omitted at their defaults to keep the hash readable; see the field
+    // comments in the constructor for why absent is unambiguous here.
+    if (this._sunOffsetMinutes !== 0)
+      params.set('sut', String(this._sunOffsetMinutes));
+    else params.delete('sut');
+    if (!this._sunCityLights) params.set('sul', '0');
+    else params.delete('sul');
+    if (this._gibsDate) params.set('vd', this._gibsDate);
+    else params.delete('vd');
     const layerState = this._layerStateProvider?.();
     if (layerState) encodeLayerStateParams(params, layerState);
     this._encodePanelStateParam(params, this._panelStateProvider?.());

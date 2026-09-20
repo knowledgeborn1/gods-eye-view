@@ -247,9 +247,22 @@ export class DayNightController {
         enablePickFeatures: false,
         credit: BLACK_MARBLE_CREDIT,
       }),
+      {
+        // Night side only. At nightAlpha 1 the composite fully REPLACES the
+        // basemap wherever it draws, which is the intended orbital look.
+        dayAlpha: 0,
+        nightAlpha: 1,
+        // …and the reason this cap is not optional. Black Marble tops out at
+        // level 8, so past that Cesium upsamples one tile across the whole
+        // viewport: at 600 m the globe rendered as a FLAT fill (measured
+        // luminance sd 0.1) with the city underneath completely erased, instead
+        // of the dark, textured night city the basemap actually has (sd 15.4).
+        // Hiding the layer once terrain passes the composite's own resolution
+        // keeps the lights for the view they were made for and hands the
+        // close-in view back to the lit basemap.
+        maximumTerrainLevel: BLACK_MARBLE_MAX_LEVEL,
+      },
     );
-    this._cityLightsLayer.dayAlpha = 0;
-    this._cityLightsLayer.nightAlpha = 1;
     this.viewer.imageryLayers.add(this._cityLightsLayer);
   }
 

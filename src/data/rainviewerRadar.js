@@ -228,10 +228,14 @@ export function createRainviewerRadarLayer() {
       _frames = [];
       _infraredFrames = [];
       _selectedTime = null;
-      _playing = false;
-      _infraredEnabled = false;
       _lastUpdate = null;
       _lastError = null;
+      // `_playing` and `_infraredEnabled` are deliberately NOT reset here.
+      // They are durable PARAMS, and the layer-state coordinator reserves
+      // them (setLayerParams) BEFORE it asks for the layer to be enabled —
+      // so init() runs after the restore has already written them. Clearing
+      // them here silently dropped a shared link's `playing: true` on every
+      // restore: the URL said play, the layer came up paused.
       console.log('[Data:RainviewerRadar] Initialized');
     },
 

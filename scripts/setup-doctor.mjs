@@ -185,6 +185,13 @@ export function buildCapabilitySummary(
     missions: configured('LL2_API_TOKEN')
       ? 'Launch Library 2 token allowance'
       : 'Launch Library 2 public access',
+    // Unconditional lines. Every source behind them is keyless, so unlike the
+    // entries above there is no credential for `configured()` to branch on —
+    // and that is exactly what the doctor should say out loud: these work on a
+    // fresh clone with an empty .env, no setup step pending.
+    radar: 'live RainViewer precipitation radar (keyless)',
+    freshImagery: 'Sentinel-2 cloudless (EOX) and daily VIIRS true color (NASA GIBS), keyless',
+    dayNight: 'real-sun terminator with NASA Black Marble city lights (keyless)',
   };
 }
 
@@ -240,6 +247,9 @@ export function formatSetupReport(report, { readyMessage } = {}) {
     `Fires:   ${report.capabilities.fires}`,
     `Traffic: ${report.capabilities.traffic}`,
     `Missions: ${report.capabilities.missions}`,
+    `Radar:   ${report.capabilities.radar}`,
+    `Imagery: ${report.capabilities.freshImagery}`,
+    `Sun:     ${report.capabilities.dayNight}`,
     '',
     'Configured providers:',
     ...CREDENTIALS.map((spec) => {
