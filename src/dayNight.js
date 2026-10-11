@@ -1,5 +1,4 @@
 import * as Cesium from 'cesium';
-import { governorRequestRender } from './renderGovernor.js';
 
 /**
  * Day/night: real-sun globe lighting, NASA Black Marble city lights on the
@@ -128,9 +127,19 @@ export function sunOffsetLabel(hours) {
  * silently turn itself off whenever someone looked through a sensor.
  */
 export class DayNightController {
-  constructor(viewer, { activeStyle = 'normal', now = () => Date.now() } = {}) {
+  constructor(
+    viewer,
+    {
+      activeStyle = 'normal',
+      now = () => Date.now(),
+      // Injected like VisualEffects' requestRender: UI-side modules ask the
+      // shell's services for a frame rather than importing the governor.
+      requestRender = () => {},
+    } = {},
+  ) {
     this.viewer = viewer;
     this._now = now;
+    this._requestRender = requestRender;
     this._enabled = false;
     this._cityLights = true;
     this._offsetHours = 0;
@@ -226,7 +235,7 @@ export class DayNightController {
     this._syncCityLightsLayer(active);
     this._syncClockTimer(active);
     this._writeClock(active);
-    governorRequestRender('day-night');
+    this._requestRender('day-night');
   }
 
   _syncCityLightsLayer(active) {
@@ -298,7 +307,7 @@ export class DayNightController {
       offsetSeconds,
       new Cesium.JulianDate(),
     );
-    governorRequestRender('day-night-clock');
+    this._requestRender('day-night-clock');
   }
 
   destroy() {

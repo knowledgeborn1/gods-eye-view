@@ -238,6 +238,7 @@ export class VisualSettings {
     // ±12 h clock offset that drives the terminator.
     this.dayNight = new DayNightController(viewer, {
       activeStyle: this.activeStyle,
+      requestRender: services.governorRequestRender,
     });
     this._detectionUserOverridden = false;
     this._cockpitVisionMode = 'optical';

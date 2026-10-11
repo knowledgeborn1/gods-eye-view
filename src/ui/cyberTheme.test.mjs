@@ -74,6 +74,12 @@ function styleOwner(t, initialVariant = 'cyber') {
       ),
     },
     services: { governorRequestRender() {}, setDetectionStyle() {} },
+    // The SUN controller latches globe lighting per style; a stub keeps this
+    // fixture about Cyber ownership only.
+    dayNight: {
+      setActiveStyle: () => ({}),
+      getState: () => ({ enabled: false, offsetHours: 0, cityLights: true }),
+    },
     _hudLayoutSelect: { value: initialVariant },
     _styleIndicator: {},
     _setBloomEnabled: (value) => calls.push(['bloom', value]),
@@ -92,6 +98,7 @@ function styleOwner(t, initialVariant = 'cyber') {
     '_syncCyberSonarControl',
     '_scheduleAdaptivePanelLayout',
     '_applyDetectionFadeFromUi',
+    '_renderDayNightState',
   ])
     owner[name] = () => {};
   return { owner, hud, root, calls };
