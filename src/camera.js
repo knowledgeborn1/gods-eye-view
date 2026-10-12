@@ -47,13 +47,27 @@ export function flyToPreset(viewer, presetName, duration = 3.0) {
 }
 
 /**
- * Set camera to Austin on load with a cinematic fly-in.
+ * Startup view (Kevin's build): Utah State Capitol, Salt Lake City.
+ * Camera sits ~1 km south of the Capitol, ~650 m above the ground (height is
+ * metres above the ellipsoid; SLC is ~1,300 m up), looking north at it.
+ */
+export const HOME_VIEW = {
+  lat: 40.768,
+  lon: -111.8882,
+  height: 1950,
+  heading: 0,
+  pitch: -30,
+};
+
+/**
+ * Set camera to the home view (Utah State Capitol) on load with a cinematic fly-in.
+ * Name kept from upstream so callers and tests stay untouched.
  * @returns {Function} Cancels the pending or active startup flight.
  */
 export function flyToAustin(viewer) {
   // Start from a high altitude, then fly down
   viewer.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(-97.7431, 30.2672, 25000),
+    destination: Cesium.Cartesian3.fromDegrees(HOME_VIEW.lon, HOME_VIEW.lat, 25000),
     orientation: {
       heading: Cesium.Math.toRadians(0),
       pitch: Cesium.Math.toRadians(-90),
@@ -65,10 +79,10 @@ export function flyToAustin(viewer) {
   const timer = setTimeout(() => {
     if (viewer.isDestroyed()) return;
     viewer.camera.flyTo({
-      destination: Cesium.Cartesian3.fromDegrees(-97.7431, 30.2672, 600),
+      destination: Cesium.Cartesian3.fromDegrees(HOME_VIEW.lon, HOME_VIEW.lat, HOME_VIEW.height),
       orientation: {
-        heading: Cesium.Math.toRadians(15),
-        pitch: Cesium.Math.toRadians(-30),
+        heading: Cesium.Math.toRadians(HOME_VIEW.heading),
+        pitch: Cesium.Math.toRadians(HOME_VIEW.pitch),
         roll: 0.0,
       },
       duration: 4.0,
