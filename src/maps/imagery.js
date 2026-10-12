@@ -25,7 +25,18 @@ export function createEsriImagery() {
 export function createIonImagery(style, accessToken) {
   accessToken = String(accessToken || '').trim();
   if (!accessToken) throw new Error('Ion imagery requires an explicit token');
-  return Cesium.IonImageryProvider.fromAssetId(style, { accessToken });
+  return Cesium.IonImageryProvider.fromAssetId(style, { accessToken }).then(forceHttpsTiles);
+}
+
+// Cesium's Bing provider requests http:// tiles whenever the page itself is
+// http (the local dev server), and the app's CSP only allows https, so Bing
+// Aerial/Labels went blank. Bing serves the same tiles over https.
+function forceHttpsTiles(provider) {
+  const inner = provider?._imageryProvider;
+  if (inner && typeof inner._imageUrlTemplate === 'string') {
+    inner._imageUrlTemplate = inner._imageUrlTemplate.replace(/^http:\/\//, 'https://');
+  }
+  return provider;
 }
 
 // ── Keyless fresh-imagery stacks ─────────────────────────────────────────────
