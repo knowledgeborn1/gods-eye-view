@@ -262,12 +262,21 @@ test('doctor describes the credential ladder without exposing values', () => {
     AISSTREAM_API_KEY: { configured: false },
     FIRMS_MAP_KEY: { configured: false },
     TOMTOM_API_KEY: { configured: false },
+    UDOT_API_KEY: { configured: false },
     OPENSKY_CLIENT_ID: { configured: false },
     OPENSKY_CLIENT_SECRET: { configured: false },
     LL2_API_TOKEN: { configured: true, source: 'environment' },
     MAPILLARY_CLIENT_TOKEN: { configured: false },
   };
   const capabilities = buildCapabilitySummary(credentials);
+  assert.match(capabilities.cctv, /Utah \(UDOT\) off until a UDOT key is added/);
+  assert.match(
+    buildCapabilitySummary({
+      ...credentials,
+      UDOT_API_KEY: { configured: true, source: 'dotenv files' },
+    }).cctv,
+    /plus UDOT Utah cameras/,
+  );
   assert.match(
     capabilities.map,
     /Google Photorealistic 3D Tiles through Cesium ion/,
@@ -298,6 +307,8 @@ test('doctor describes the credential ladder without exposing values', () => {
   assert.doesNotMatch(report, /configured-value/);
   assert.match(report, /Cesium ion \(environment\)/);
   assert.match(report, /Launch Library 2 \(environment\)/);
+  assert.match(report, /\[--\] UDOT Utah cameras/);
+  assert.match(report, /CCTV: .*Utah \(UDOT\) off/);
 
   const pinokioReport = formatSetupReport(
     {
@@ -324,6 +335,7 @@ test('doctor sends Keychain-backed reports to dev-fresh and describes OpenSky as
       'AISSTREAM_API_KEY',
       'FIRMS_MAP_KEY',
       'TOMTOM_API_KEY',
+      'UDOT_API_KEY',
       'OPENSKY_CLIENT_ID',
       'OPENSKY_CLIENT_SECRET',
       'LL2_API_TOKEN',
@@ -365,6 +377,7 @@ test('doctor never calls a dependency-missing setup ready', () => {
       'AISSTREAM_API_KEY',
       'FIRMS_MAP_KEY',
       'TOMTOM_API_KEY',
+      'UDOT_API_KEY',
       'OPENSKY_CLIENT_ID',
       'OPENSKY_CLIENT_SECRET',
       'LL2_API_TOKEN',

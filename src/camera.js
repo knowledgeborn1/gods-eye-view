@@ -67,7 +67,11 @@ export const HOME_VIEW = {
 export function flyToAustin(viewer) {
   // Start from a high altitude, then fly down
   viewer.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(HOME_VIEW.lon, HOME_VIEW.lat, 25000),
+    destination: Cesium.Cartesian3.fromDegrees(
+      HOME_VIEW.lon,
+      HOME_VIEW.lat,
+      25000,
+    ),
     orientation: {
       heading: Cesium.Math.toRadians(0),
       pitch: Cesium.Math.toRadians(-90),
@@ -79,7 +83,11 @@ export function flyToAustin(viewer) {
   const timer = setTimeout(() => {
     if (viewer.isDestroyed()) return;
     viewer.camera.flyTo({
-      destination: Cesium.Cartesian3.fromDegrees(HOME_VIEW.lon, HOME_VIEW.lat, HOME_VIEW.height),
+      destination: Cesium.Cartesian3.fromDegrees(
+        HOME_VIEW.lon,
+        HOME_VIEW.lat,
+        HOME_VIEW.height,
+      ),
       orientation: {
         heading: Cesium.Math.toRadians(HOME_VIEW.heading),
         pitch: Cesium.Math.toRadians(HOME_VIEW.pitch),

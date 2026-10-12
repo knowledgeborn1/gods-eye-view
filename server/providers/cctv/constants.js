@@ -275,6 +275,31 @@ export const DELDOT_ANCHORS = [
   { lat: 39.1582, lon: -75.5244 }, // Dover (Kent)
   { lat: 38.6906, lon: -75.3877 }, // Georgetown (Sussex)
 ];
+/** UDOT (Utah DOT) traffic cameras: the statewide catalog on the agency's
+ * 511-platform API (same vendor as Ontario 511). The catalog call needs a free
+ * developer key (`UDOT_API_KEY`, https://www.udottraffic.utah.gov/developers/doc)
+ * and is rate limited to 10 calls per 60 s, which the 15-minute catalog cache
+ * (CCTV_SOURCE_CACHE_MS) stays well inside; frames need no key. The key is
+ * appended as a query parameter at fetch time and never logged. */
+export const UDOT_CAMERAS_URL =
+  'https://www.udottraffic.utah.gov/api/v2/get/cameras?format=json';
+/** The only origin UDOT camera frames may come from. Each `Views[].Url` in the
+ * catalog is `/map/Cctv/<viewId>` on this host and serves a still image (PNG
+ * or JPEG, `max-age=60`; an offline camera serves a branded placeholder). */
+export const UDOT_IMAGE_ORIGIN = 'https://www.udottraffic.utah.gov/map/Cctv/';
+/** ~2,080 cameras are enabled statewide; 200 keeps the pack near the catalog
+ * cap's per-pack share and the busiest corridors (Wasatch Front) load first. */
+export const DEFAULT_UDOT_MAX_SOURCES = 200;
+/** Hard ceiling on the catalog body. The whole state is ~650 KB. */
+export const UDOT_MAX_CATALOG_BYTES = 4 * 1024 * 1024;
+/** Prioritization anchors: the Wasatch Front cities plus Park City. */
+export const UDOT_ANCHORS = [
+  { lat: 40.7608, lon: -111.891 }, // Salt Lake City
+  { lat: 40.2338, lon: -111.6585 }, // Provo
+  { lat: 41.223, lon: -111.9738 }, // Ogden
+  { lat: 40.6461, lon: -111.498 }, // Park City
+];
+
 /** Camera CATALOGS change rarely; 15 min keeps multi-megabyte upstream list refetches (Austin rows.json + 4 Caltrans districts + TfL + Ontario 511) infrequent. Frames are fetched per-request and are unaffected. */
 export const CCTV_SOURCE_CACHE_MS = 15 * 60 * 1000;
 /** Per-provider catalog-fetch timeout. Bounds the worst-case refresh so one

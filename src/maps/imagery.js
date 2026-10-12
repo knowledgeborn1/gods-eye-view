@@ -25,7 +25,9 @@ export function createEsriImagery() {
 export function createIonImagery(style, accessToken) {
   accessToken = String(accessToken || '').trim();
   if (!accessToken) throw new Error('Ion imagery requires an explicit token');
-  return Cesium.IonImageryProvider.fromAssetId(style, { accessToken }).then(forceHttpsTiles);
+  return Cesium.IonImageryProvider.fromAssetId(style, { accessToken }).then(
+    forceHttpsTiles,
+  );
 }
 
 // Cesium's Bing provider requests http:// tiles whenever the page itself is

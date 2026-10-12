@@ -19,6 +19,7 @@ export const CREDENTIALS = Object.freeze([
   { name: 'AISSTREAM_API_KEY', label: 'AISStream vessels', keychain: [['aisstream-api', 'api-key']] },
   { name: 'FIRMS_MAP_KEY', label: 'NASA FIRMS fires', keychain: [['firms-map', 'map-key']] },
   { name: 'TOMTOM_API_KEY', label: 'TomTom traffic', keychain: [['tomtom-api', 'api-key']] },
+  { name: 'UDOT_API_KEY', label: 'UDOT Utah cameras', keychain: [['udot-api', 'api-key']] },
   {
     name: 'OPENSKY_CLIENT_ID',
     label: 'OpenSky client ID',
@@ -182,6 +183,9 @@ export function buildCapabilitySummary(
     vessels: configured('AISSTREAM_API_KEY') ? 'live AISStream feed' : 'off until an AISStream key is added',
     fires: configured('FIRMS_MAP_KEY') ? 'live NASA FIRMS feed' : 'off until a FIRMS key is added',
     traffic: configured('TOMTOM_API_KEY') ? 'live TomTom flow' : 'built-in traffic simulation',
+    cctv: configured('UDOT_API_KEY')
+      ? 'keyless city and DOT packs plus UDOT Utah cameras'
+      : 'keyless city and DOT packs; Utah (UDOT) off until a UDOT key is added',
     missions: configured('LL2_API_TOKEN')
       ? 'Launch Library 2 token allowance'
       : 'Launch Library 2 public access',
@@ -246,6 +250,7 @@ export function formatSetupReport(report, { readyMessage } = {}) {
     `Vessels: ${report.capabilities.vessels}`,
     `Fires:   ${report.capabilities.fires}`,
     `Traffic: ${report.capabilities.traffic}`,
+    `CCTV:    ${report.capabilities.cctv}`,
     `Missions: ${report.capabilities.missions}`,
     `Radar:   ${report.capabilities.radar}`,
     `Imagery: ${report.capabilities.freshImagery}`,

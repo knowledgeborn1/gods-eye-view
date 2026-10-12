@@ -19,6 +19,7 @@ import {
   loadCalgarySourcesFromOpenData,
   loadDelDOTSourcesFromOpenData,
   loadVegvesenSourcesFromOpenData,
+  loadUdotSourcesFromOpenData,
 } from './sources.js';
 
 /** Env kill switch: unset or anything but "0" means enabled. */
@@ -97,6 +98,12 @@ const LIVE_PACKS = [
     name: 'vegvesen',
     enabled: () => envEnabled('CCTV_VEGVESEN_ENABLED'),
     load: loadVegvesenSourcesFromOpenData,
+  },
+  {
+    // Keyed: the loader itself skips (one console line) when UDOT_API_KEY is unset.
+    name: 'udot',
+    enabled: () => envEnabled('CCTV_UDOT_ENABLED'),
+    load: loadUdotSourcesFromOpenData,
   },
 ];
 /**

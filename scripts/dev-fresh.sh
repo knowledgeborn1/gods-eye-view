@@ -59,6 +59,7 @@ KEY_SETUP_EXTERNAL_KEYS=()
 [[ -n "${AISSTREAM_API_KEY:-}" ]] && KEY_SETUP_EXTERNAL_KEYS+=(AISSTREAM_API_KEY)
 [[ -n "${FIRMS_MAP_KEY:-}" ]] && KEY_SETUP_EXTERNAL_KEYS+=(FIRMS_MAP_KEY)
 [[ -n "${TOMTOM_API_KEY:-}" ]] && KEY_SETUP_EXTERNAL_KEYS+=(TOMTOM_API_KEY)
+[[ -n "${UDOT_API_KEY:-}" ]] && KEY_SETUP_EXTERNAL_KEYS+=(UDOT_API_KEY)
 [[ -n "${OPENSKY_CLIENT_ID:-}" ]] && KEY_SETUP_EXTERNAL_KEYS+=(OPENSKY_CLIENT_ID)
 [[ -n "${OPENSKY_CLIENT_SECRET:-}" ]] && KEY_SETUP_EXTERNAL_KEYS+=(OPENSKY_CLIENT_SECRET)
 [[ -n "${LL2_API_TOKEN:-}" ]] && KEY_SETUP_EXTERNAL_KEYS+=(LL2_API_TOKEN)
@@ -237,11 +238,13 @@ AISSTREAM_API_KEY="${AISSTREAM_API_KEY:-$(read_dotenv_value "AISSTREAM_API_KEY")
 CESIUM_ION_TOKEN="${CESIUM_ION_TOKEN:-$(read_dotenv_value "CESIUM_ION_TOKEN")}"
 LL2_API_TOKEN="${LL2_API_TOKEN:-$(read_dotenv_value "LL2_API_TOKEN")}"
 TOMTOM_API_KEY="${TOMTOM_API_KEY:-$(read_dotenv_value "TOMTOM_API_KEY")}"
+UDOT_API_KEY="${UDOT_API_KEY:-$(read_dotenv_value "UDOT_API_KEY")}"
 FIRMS_MAP_KEY="${FIRMS_MAP_KEY:-$(read_dotenv_value "FIRMS_MAP_KEY")}"
 OPENAI_API_KEY="${OPENAI_API_KEY:-$(read_keychain_secret "openai-api" "api-key")}"
 AISSTREAM_API_KEY="${AISSTREAM_API_KEY:-$(read_keychain_secret "aisstream-api" "api-key")}"
 CESIUM_ION_TOKEN="${CESIUM_ION_TOKEN:-$(read_keychain_secret "cesium-ion" "token")}"
 TOMTOM_API_KEY="${TOMTOM_API_KEY:-$(read_keychain_secret "tomtom-api" "api-key")}"
+UDOT_API_KEY="${UDOT_API_KEY:-$(read_keychain_secret "udot-api" "api-key")}"
 FIRMS_MAP_KEY="${FIRMS_MAP_KEY:-$(read_keychain_secret "firms-map" "map-key")}"
 
 if [[ ! -f "$SOURCE_ROOT/src/data/cctv.js" ]]; then
@@ -358,6 +361,7 @@ else
 fi
 [[ -n "${CESIUM_ION_TOKEN}" ]] && echo "Cesium ion token: configured — Google 3D, Bing, and world-terrain stacks available" || echo "Cesium ion token: not set"
 [[ -n "${TOMTOM_API_KEY}" ]] && echo "TomTom key (live traffic flow): configured" || echo "TomTom key (live traffic flow): not set — simulated traffic"
+[[ -n "${UDOT_API_KEY}" ]] && echo "UDOT key (Utah CCTV): configured" || echo "UDOT key (Utah CCTV): not set — Utah cameras skipped, other packs keyless"
 [[ -n "${FIRMS_MAP_KEY}" ]] && echo "NASA FIRMS key (live fires): configured" || echo "NASA FIRMS key (live fires): not set — fires layer requires a key"
 [[ -n "${LL2_API_TOKEN}" ]] && echo "Launch Library 2 token: configured" || echo "Launch Library 2 token: not set — using public access"
 
@@ -418,6 +422,7 @@ put_env_if_set OPENAI_API_KEY "${OPENAI_API_KEY}"
 put_env_if_set AISSTREAM_API_KEY "${AISSTREAM_API_KEY}"
 put_env_if_set CESIUM_ION_TOKEN "${CESIUM_ION_TOKEN}"
 put_env_if_set TOMTOM_API_KEY "${TOMTOM_API_KEY}"
+put_env_if_set UDOT_API_KEY "${UDOT_API_KEY}"
 put_env_if_set FIRMS_MAP_KEY "${FIRMS_MAP_KEY}"
 put_env_if_set LL2_API_TOKEN "${LL2_API_TOKEN}"
 put_env GEV_LAUNCHER "dev-fresh"

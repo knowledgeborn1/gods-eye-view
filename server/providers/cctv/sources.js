@@ -65,6 +65,11 @@ import {
   DEFAULT_VEGVESEN_MAX_SOURCES,
   VEGVESEN_MAX_CATALOG_BYTES,
   NORWAY_ANCHORS,
+  UDOT_CAMERAS_URL,
+  UDOT_IMAGE_ORIGIN,
+  DEFAULT_UDOT_MAX_SOURCES,
+  UDOT_MAX_CATALOG_BYTES,
+  UDOT_ANCHORS,
 } from './constants.js';
 import {
   toFiniteNumber,
@@ -1705,6 +1710,187 @@ export async function loadDelDOTSourcesFromOpenData() {
       '[CCTV] DelDOT source download error:',
       error?.message || error,
     );
+    return [];
+  }
+}
+
+/** Utah bounding box — a bad upstream coord can't place a camera out of state. */
+function isLikelyUtahCoordinate(lat, lon) {
+  return (
+    isPlausibleLatLon(lat, lon) &&
+    lat >= 36.9 &&
+    lat <= 42.1 &&
+    lon >= -114.1 &&
+    lon <= -109.0
+  );
+}
+
+/**
+ * Pin a UDOT camera view URL to the official still-image host.
+ *
+ * The catalog publishes `https://www.udottraffic.utah.gov/map/Cctv/<viewId>`;
+ * the frame URL is REBUILT from the pinned origin and the validated view id
+ * rather than taken from the payload, so a changed catalog can never steer the
+ * frame proxy to another host or path.
+ *
+ * @param {string} value - Upstream view URL.
+ * @returns {string} Canonical udottraffic still URL, or '' if not accepted.
+ */
+function normalizeUdotCctvUrl(value) {
+  try {
+    const parsed = new URL(String(value || '').trim());
+    const match = /^\/map\/Cctv\/([^/?#]+)$/.exec(parsed.pathname);
+    if (!match) return '';
+    const host = parsed.hostname.toLowerCase();
+    if (
+      parsed.protocol !== 'https:' ||
+      parsed.username ||
+      parsed.password ||
+      (host !== 'www.udottraffic.utah.gov' && host !== 'udottraffic.utah.gov')
+    ) {
+      return '';
+    }
+    const viewId = decodeURIComponent(match[1]);
+    if (!/^[A-Za-z0-9_.-]{1,40}$/.test(viewId)) return '';
+    return `${UDOT_IMAGE_ORIGIN}${encodeURIComponent(viewId)}`;
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * One UDOT catalog row -> one catalog source, or null.
+ *
+ * Only the first ENABLED view on the pinned frame host is used; a camera whose
+ * views are all disabled or off-host is dropped. `Direction` is a dedicated
+ * facing field ("Northbound", or "Unknown" for about a third of the cameras),
+ * so bare cardinals are allowed; an unknown direction takes the shared id-hash
+ * fallback at low confidence. `Roadway` names the route ("I-15", or "Unknown"
+ * for local cameras), so the city label falls through to `Location`.
+ *
+ * @param {object} row - One element of the `get/cameras` array.
+ * @returns {?object}
+ */
+export function udotCameraToSource(row) {
+  if (!row || typeof row !== 'object') return null;
+  const rawId = String(row.Id ?? row.id ?? '').trim();
+  if (!/^[A-Za-z0-9_-]{1,40}$/.test(rawId)) return null;
+  const lat = toFiniteNumber(row.Latitude ?? row.latitude);
+  const lon = toFiniteNumber(row.Longitude ?? row.longitude);
+  if (!isLikelyUtahCoordinate(lat, lon)) return null;
+
+  const views = Array.isArray(row.Views) ? row.Views : [];
+  let view = null;
+  for (const candidate of views) {
+    const status = String(candidate?.Status ?? candidate?.status ?? '')
+      .trim()
+      .toLowerCase();
+    if (status !== 'enabled') continue;
+    const url = normalizeUdotCctvUrl(candidate?.Url ?? candidate?.url);
+    if (!url) continue;
+    view = {
+      url,
+      description: String(candidate?.Description ?? '').trim(),
+    };
+    break;
+  }
+  if (!view) return null;
+
+  const cameraId = `udot-${rawId.toLowerCase()}`;
+  const unknown = (text) => !text || /^unknown$/i.test(text);
+  const roadway = String(row.Roadway ?? '').trim();
+  const location = String(row.Location ?? '').trim();
+  const name = [location || roadway || `UDOT ${rawId}`, view.description]
+    .filter(Boolean)
+    .join(' - ');
+  const city = !unknown(roadway) ? roadway : location || 'Utah';
+
+  const heading = directionToHeading(row.Direction, true);
+  const hasHeading = Number.isFinite(heading);
+
+  return {
+    id: cameraId,
+    name,
+    city,
+    cityId: 'utah',
+    provider: 'UDOT',
+    lat,
+    lon,
+    headingDeg: hasHeading ? heading : fallbackHeadingFromId(cameraId),
+    headingConfidence: hasHeading ? 'high' : 'low',
+    // Fabricated RAW PRIOR poses (same personalities as the other DOT packs);
+    // the client ground-snap + manual calibration own the truth.
+    pitchDeg: hasHeading ? -24 : -18,
+    fovDeg: hasHeading ? 56 : 44,
+    rangeM: hasHeading ? 210 : 145,
+    mountHeightM: hasHeading ? 10 : 8,
+    groundElevationM: 1300, // Wasatch Front valley floor; client ground resolution owns placement.
+    feedType: 'image',
+    url: view.url,
+    snapshotUrl: view.url,
+    sourceKind: 'udot-open-data',
+    license: 'Public UDOT traffic camera',
+  };
+}
+
+/** Logged once per process, so a keyless install sees one line, not one per refresh. */
+let udotMissingKeyLogged = false;
+
+/**
+ * Fetch UDOT (Utah DOT) traffic cameras from the agency's 511-platform API.
+ *
+ * Needs `UDOT_API_KEY`; without it the pack is skipped with one console line
+ * and every other CCTV pack is unaffected. One catalog call per refresh (the
+ * API allows 10 per minute; the catalog cache refreshes every 15 minutes) and
+ * never a call per camera — frames are keyless stills on the pinned origin.
+ *
+ * @returns {Promise<Array<object>>} Normalized camera source objects.
+ */
+export async function loadUdotSourcesFromOpenData() {
+  const apiKey = String(process.env.UDOT_API_KEY || '').trim();
+  if (!apiKey) {
+    if (!udotMissingKeyLogged) {
+      udotMissingKeyLogged = true;
+      console.log(
+        '[CCTV] UDOT (Utah) cameras skipped: UDOT_API_KEY is not set',
+      );
+    }
+    return [];
+  }
+  try {
+    const endpoint = new URL(UDOT_CAMERAS_URL);
+    endpoint.searchParams.set('key', apiKey);
+    const resp = await fetch(endpoint, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(CCTV_SOURCE_FETCH_TIMEOUT_MS),
+      redirect: 'error',
+    });
+    if (!resp.ok) {
+      console.warn('[CCTV] UDOT source download failed:', resp.status);
+      return [];
+    }
+    const rows = await readResponseJsonCapped(resp, UDOT_MAX_CATALOG_BYTES);
+    if (!Array.isArray(rows)) return [];
+
+    const cameras = rows.map(udotCameraToSource).filter(Boolean);
+    const unique = Array.from(
+      new Map(cameras.map((camera) => [camera.id, camera])).values(),
+    );
+    const maxRaw = Number(
+      process.env.CCTV_UDOT_MAX_SOURCES || DEFAULT_UDOT_MAX_SOURCES,
+    );
+    const maxCount = Number.isFinite(maxRaw)
+      ? Math.max(8, Math.min(2500, Math.floor(maxRaw)))
+      : DEFAULT_UDOT_MAX_SOURCES;
+    const prioritized = prioritizeSources(unique, maxCount, UDOT_ANCHORS);
+    console.log(
+      `[CCTV] Loaded UDOT camera sources: ${unique.length} enabled (using nearest ${prioritized.length})`,
+    );
+    return prioritized;
+  } catch (error) {
+    // error.message never carries the request URL for the failures seen here
+    // (timeouts, DNS, refused redirects, JSON parse), so the key stays out of logs.
+    console.warn('[CCTV] UDOT source download error:', error?.message || error);
     return [];
   }
 }

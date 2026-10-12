@@ -1,5 +1,13 @@
 # Changelog
 
+- UDOT (Utah DOT) traffic cameras join the CCTV mesh as the first keyed pack:
+  a free `UDOT_API_KEY` (POWER UP panel, setup doctor, dev-fresh) unlocks one
+  catalog call per 15-minute refresh and keyless stills on the pinned
+  `udottraffic.utah.gov/map/Cctv/` origin. Without a key the pack is skipped
+  with one console line and every other pack is unaffected. The 200 cameras
+  nearest Salt Lake City, Provo, Ogden and Park City load by default
+  (`CCTV_UDOT_MAX_SOURCES`); `CCTV_UDOT_ENABLED=0` turns the pack off.
+
 - Treat explicitly current, complete empty vessel coverage as a successful update,
   clearing obsolete contacts while retaining stale or incomplete snapshots.
 
