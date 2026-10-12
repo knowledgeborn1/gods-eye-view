@@ -34,7 +34,14 @@ export function createIonImagery(style, accessToken) {
 function forceHttpsTiles(provider) {
   const inner = provider?._imageryProvider;
   if (inner && typeof inner._imageUrlTemplate === 'string') {
-    inner._imageUrlTemplate = inner._imageUrlTemplate.replace(/^http:\/\//, 'https://');
+    inner._imageUrlTemplate = inner._imageUrlTemplate
+      .replace(/^http:\/\//, 'https://')
+      // Bing Labels comes from ak.dynamic.tN.tiles.virtualearth.net, which has no
+      // valid https certificate; tN.ssl.ak.dynamic serves the same tiles over https.
+      .replace(
+        /^https:\/\/ak\.dynamic\.\{subdomain\}\.tiles\.virtualearth\.net/,
+        'https://{subdomain}.ssl.ak.dynamic.tiles.virtualearth.net',
+      );
   }
   return provider;
 }
